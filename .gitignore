@@ -1,0 +1,7 @@
+.idea/
+*.qrel
+*.results
+*.swp
+__pycache__/
+saves/
+utils/trec_eval-9.0.5
