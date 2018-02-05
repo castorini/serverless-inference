@@ -37,8 +37,8 @@ if torch.cuda.is_available() and not args.cuda:
 np.random.seed(args.seed)
 random.seed(args.seed)
 
-word_vectors_dir = os.path.join(os.pardir, os.pardir, 'data', 'GloVe')
-word_vectors_name = 'glove.840B.300d.txt'
+word_vectors_dir = os.path.join(os.pardir, os.pardir, 'data', 'word2vec')
+word_vectors_name = 'aquaint+wiki.txt.gz.ndim=50.txt'
 
 if config.dataset not in ('TREC', 'wiki'):
     print("Unsupported dataset")

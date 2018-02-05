@@ -17,7 +17,7 @@ def get_args():
     parser.add_argument('--save_path', type=str,    default='saves')
     parser.add_argument('--output_channel', type=int, default=100)
     parser.add_argument('--filter_width', type=int, default=5)
-    parser.add_argument('--words_dim', type=int, default=300)
+    parser.add_argument('--words_dim', type=int, default=50)
     parser.add_argument('--dropout', type=float, default=0.5)
     parser.add_argument('--epoch_decay', type=int, default=15)
     parser.add_argument('--vector_cache', type=str, default='data/word2vec.trecqa.pt')
