@@ -9,7 +9,7 @@ import torch.nn as nn
 import torch.onnx
 
 from sm_cnn.args import get_args
-from sm_cnn.model import SmPlusPlus
+from sm_cnn.model import SMModel
 from utils.relevancy_metrics import get_map_mrr
 from datasets.trecqa import TRECQA
 from datasets.wikiqa import WikiQA
@@ -76,7 +76,7 @@ if args.resume_snapshot:
     else:
         model = torch.load(args.resume_snapshot, map_location=lambda storage, location: storage)
 else:
-    model = SmPlusPlus(config)
+    model = SMModel(config)
 
     if args.cuda:
         model.cuda()
