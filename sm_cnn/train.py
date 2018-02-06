@@ -9,7 +9,7 @@ import torch.nn as nn
 import torch.onnx
 
 from sm_cnn.args import get_args
-from sm_cnn.model import SmPlusPlus
+from sm_cnn.model import SMModel
 from utils.relevancy_metrics import get_map_mrr
 from datasets.trecqa import TRECQA
 from datasets.wikiqa import WikiQA
@@ -58,6 +58,7 @@ else:
     embedding.weight = nn.Parameter(WikiQA.TEXT_FIELD.vocab.vectors)
 
 embedding.weight.requires_grad = False
+snapshot_path = os.path.join(args.save_path, args.dataset, 'static_best_model.pt')
 
 if args.gpu != -1:
     with torch.cuda.device(args.gpu):
@@ -67,6 +68,7 @@ print("Dataset {}".format(args.dataset))
 print("Train instance", len(train_iter.dataset.examples))
 print("Dev instance", len(dev_iter.dataset.examples))
 print("Test instance", len(test_iter.dataset.examples))
+print("Snapshot path", snapshot_path)
 
 if args.resume_snapshot:
     if args.cuda:
@@ -74,7 +76,7 @@ if args.resume_snapshot:
     else:
         model = torch.load(args.resume_snapshot, map_location=lambda storage, location: storage)
 else:
-    model = SmPlusPlus(config)
+    model = SMModel(config)
 
     if args.cuda:
         model.cuda()
@@ -153,7 +155,6 @@ while True:
             if dev_map > best_dev_map:
                 iters_not_improved = 0
                 best_dev_map = dev_map
-                snapshot_path = os.path.join(args.save_path, args.dataset, 'static_best_model.pt')
                 torch.save(model, snapshot_path)
             else:
                 iters_not_improved += 1
@@ -167,3 +168,6 @@ while True:
                                       epoch, iterations, 1 + batch_idx, len(train_iter),
                                       100. * (1 + batch_idx) / len(train_iter), loss.data[0], ' ' * 8,
                                       train_acc, ' ' * 12))
+
+model = torch.load(snapshot_path)
+torch.save(model.cpu(), snapshot_path)
