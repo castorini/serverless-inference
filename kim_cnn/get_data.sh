@@ -1,3 +1,4 @@
+#!/bin/bash
 mkdir data
 cd data
 wget https://raw.githubusercontent.com/Impavidity/kim_cnn/master/data/stsa.fine.dev.tsv
