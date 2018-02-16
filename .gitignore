@@ -3,6 +3,7 @@
 *.results
 *.swp
 __pycache__/
+kim_cnn/data/
 saves/
 utils/trec_eval-9.0.5
 node_modules/
