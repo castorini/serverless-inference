@@ -12,7 +12,7 @@ from model import KimCNN
 # You will need to setup your own dynamoDB and table
 client = boto3.client('dynamodb')
 # and replace this with your own table's name
-table_name = 'wordvec'
+table_name = 'word2vec300d'
 
 
 def sublist(l, batch_size):
@@ -40,7 +40,7 @@ def build_matrix(words, lookup):
             matrix = vec
         else:
             matrix = np.append(matrix, vec, axis=1)
-    
+
     matrix.resize(1, matrix.shape[0], matrix.shape[1], matrix.shape[2])
     return matrix
 
@@ -50,7 +50,7 @@ def sentence_to_matrix(sentence):
     Get word vectors for word in sentence and build a matrix with the vectors
     """
     words = sentence.split(' ')
-    
+
     # request cannot contain duplicate keys. remove duplicates
     words_no_dup = list(set(words))
     read_batch_size = 100
@@ -58,7 +58,7 @@ def sentence_to_matrix(sentence):
     wordvec_a = []
     for batch in batches:
         request = [{'word':{'S':word}} for word in batch]
-        
+
         response = client.batch_get_item(
             RequestItems = {
                 table_name: {
@@ -82,12 +82,11 @@ def handler(event, context):
 
     # load and run model
     # you may need to modify this based on your model definition
-    model = torch.load('non-static_best_model.pt')
+    model = torch.load('static_best_model_cpu.pt')
     model.eval()
     torchIn = torch.from_numpy(input_matrix.astype(np.float32))
     torchIn = Variable(torchIn)
     output = model(torchIn)
-    print(output)
 
     prediction = torch.max(output, 1)[1].view(1).data.tolist()[0]
 
@@ -110,4 +109,4 @@ if __name__ == '__main__':
             'input': 'this is very good',
         })
     }
-    print(handler(event, None))    
+    print(handler(event, None))

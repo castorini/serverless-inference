@@ -7,11 +7,11 @@ import numpy as np
 import json
 
 # change this to use other models
-from model import SMModel
+from sm_cnn.model import SMModel
 
 
 client = boto3.client('dynamodb')
-table_name = 'word2vec'
+table_name = 'word2vec50d'
 
 def build_matrix(words, lookup):
     matrix = None
@@ -74,7 +74,7 @@ def handler(event, context):
 
     # load and run model
     # you may need to modify this based on your model definition
-    model = torch.load('saves/TREC/static_best_model.pt')
+    model = torch.load('static_best_model.pt')
     model.eval()
     torchIn1 = Variable(torch.from_numpy(input_matrix1.astype(np.float32)))
     torchIn2 = Variable(torch.from_numpy(input_matrix2.astype(np.float32)))
