@@ -20,7 +20,8 @@ def build_matrix(words, lookup):
             vec_raw = lookup[word]
             vec = np.array([float(f['N']) for f in vec_raw])
         else:
-            # random vector
+            # random vector if word not in lookup
+            print('Not found in Dynamo: ' + word)
             vec = np.random.rand(50)
 
         vec = vec.reshape(1, 1, vec.shape[0])
