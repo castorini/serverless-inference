@@ -4,13 +4,14 @@ const request = require('request');
 const _ = require('lodash');
 const readline = require('readline');
 
-if (process.argv.length != 4) {
-    console.log('Usage: node query_sm_model.js API_URL num_items');
+if (process.argv.length != 5) {
+    console.log('Usage: node query_sm_model.js API_URL num_items concurrency');
     process.exit(1);
 }
 
 var url = process.argv[2];
 var num_items = process.argv[3];
+var concurrency = process.argv[4];
 
 function readFile(path, cb) {
     var data = [];
@@ -40,7 +41,7 @@ async.series([
     var t0 = process.hrtime();
     var latencies = [];
 
-    async.map(trec_dev, function(qa_pair, callback) {
+    var parallel_tasks = trec_dev.map(qa_pair => callback => {
         var request_start = process.hrtime();
         request.post(
             url,
@@ -62,19 +63,25 @@ async.series([
                 }
             }
         );
-    },
-    function(err, results) {
+    });
+
+    async.parallelLimit(parallel_tasks, concurrency, function(err, results) {
         console.log(results);
         var since_t0 = process.hrtime(t0);
         var elapsed = since_t0[0] + since_t0[1] / 1000000000;
         console.log('========================================');
+        var contains_timeout = _.find(results, result => {
+            var parsed_result = JSON.parse(result);
+            return _.has(parsed_result, 'message') && parsed_result['message'] === 'Endpoint request timed out';
+        });
         console.log(`${size} queries took ${elapsed} ms. Throughput is ${size / elapsed} qps.`);
+        console.log(`Contains timeouts: ${Boolean(contains_timeout)}`)
 
         latencies.sort();
         var p50 = latencies[Math.floor(latencies.length * 0.5) - 1];
         var p99 = latencies[Math.floor(latencies.length * 0.99) - 1];
         var avg = _.mean(latencies);
-        console.log(`${latencies.length} requests successfully returned. p50 latency is ${p50} s, p99 latency is ${p99}, avg. latency is ${avg}.`);
+        console.log(`${latencies.length} requests successfully returned. p50 latency is ${p50} s, p99 latency is ${p99} s, avg. latency is ${avg} s.`);
     });
 });
 
