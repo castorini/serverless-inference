@@ -13,7 +13,7 @@ from model import KimCNN
 client = boto3.client('dynamodb')
 # and replace this with your own table's name
 table_name = 'word2vec300d'
-
+model = None
 
 def sublist(l, batch_size):
     """
@@ -82,8 +82,10 @@ def handler(event, context):
 
     # load and run model
     # you may need to modify this based on your model definition
-    model = torch.load('static_best_model_cpu.pt')
-    model.eval()
+    global model
+    if model is None:
+        model = torch.load('static_best_model_cpu.pt')
+        model.eval()
     torchIn = torch.from_numpy(input_matrix.astype(np.float32))
     torchIn = Variable(torchIn)
     output = model(torchIn)
