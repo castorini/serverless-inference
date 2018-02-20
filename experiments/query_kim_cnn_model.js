@@ -69,7 +69,7 @@ async.series([
             var parsed_result = JSON.parse(result);
             return _.has(parsed_result, 'message') && parsed_result['message'] === 'Endpoint request timed out';
         });
-        console.log(`${size} queries took ${elapsed} ms. Throughput is ${size / elapsed} qps.`);
+        console.log(`${size} queries took ${elapsed} s. Throughput is ${size / elapsed} qps.`);
         console.log(`Contains timeouts: ${Boolean(contains_timeout)}`)
 
         latencies.sort();

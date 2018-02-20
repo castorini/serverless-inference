@@ -66,7 +66,7 @@ async.series([
     });
 
     async.parallelLimit(parallel_tasks, concurrency, function(err, results) {
-        console.log(results);
+        //console.log(results);
         var since_t0 = process.hrtime(t0);
         var elapsed = since_t0[0] + since_t0[1] / 1000000000;
         console.log('========================================');
@@ -74,7 +74,7 @@ async.series([
             var parsed_result = JSON.parse(result);
             return _.has(parsed_result, 'message') && parsed_result['message'] === 'Endpoint request timed out';
         });
-        console.log(`${size} queries took ${elapsed} ms. Throughput is ${size / elapsed} qps.`);
+        console.log(`${size} queries took ${elapsed} s. Throughput is ${size / elapsed} qps.`);
         console.log(`Contains timeouts: ${Boolean(contains_timeout)}`)
 
         latencies.sort();
