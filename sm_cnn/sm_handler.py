@@ -12,6 +12,7 @@ from sm_cnn.model import SMModel
 
 client = boto3.client('dynamodb')
 table_name = 'word2vec50d'
+model = None
 
 def build_matrix(words, lookup):
     matrix = None
@@ -75,8 +76,10 @@ def handler(event, context):
 
     # load and run model
     # you may need to modify this based on your model definition
-    model = torch.load('static_best_model.pt')
-    model.eval()
+    global model
+    if model is None:
+        model = torch.load('static_best_model.pt')
+        model.eval()
     torchIn1 = Variable(torch.from_numpy(input_matrix1.astype(np.float32)))
     torchIn2 = Variable(torch.from_numpy(input_matrix2.astype(np.float32)))
     output = model(torchIn1, torchIn2)
