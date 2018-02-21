@@ -1,3 +1,5 @@
+import time
+
 import boto3
 import torch
 from torch.autograd import Variable
@@ -75,27 +77,40 @@ def sentence_to_matrix(sentence):
 
 
 def handler(event, context):
+    t_start = time.time()
     event = json.loads(event['body'])
     sentence = event['input']
 
+    t_start_build_sentence_embedding = time.time()
     input_matrix = sentence_to_matrix(sentence)
+    t_duration_sentence_embedding = time.time() - t_start_build_sentence_embedding
 
     # load and run model
     # you may need to modify this based on your model definition
+    t_start_load_model = time.time()
     global model
     if model is None:
         model = torch.load('static_best_model_cpu.pt')
         model.eval()
+    t_duration_load_model = time.time() - t_start_load_model
+
+    t_start_inference = time.time()
     torchIn = torch.from_numpy(input_matrix.astype(np.float32))
     torchIn = Variable(torchIn)
     output = model(torchIn)
 
     prediction = torch.max(output, 1)[1].view(1).data.tolist()[0]
+    t_duration_inference = time.time() - t_start_inference
+    t_duration = time.time() - t_start
 
     result = {
         'input': sentence,
         'prediction': prediction,
-        'output': output.data.tolist()[0]
+        'output': output.data.tolist()[0],
+        't_overall': t_duration,
+        't_sent_embedding': t_duration_sentence_embedding,
+        't_load_model': t_duration_load_model,
+        't_inference': t_duration_inference
     }
 
     # return result

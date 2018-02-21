@@ -61,22 +61,35 @@ async.series([
     });
 
     async.parallelLimit(parallel_tasks, concurrency, function(err, results) {
-        console.log(results);
         var since_t0 = process.hrtime(t0);
         var elapsed = since_t0[0] + since_t0[1] / 1000000000;
         console.log('========================================');
-        var contains_timeout = _.find(results, result => {
-            var parsed_result = JSON.parse(result);
-            return _.has(parsed_result, 'message') && parsed_result['message'] === 'Endpoint request timed out';
+        var parsed_results = results.map(r => JSON.parse(r));
+        var contains_timeout = _.find(parsed_results, result => {
+            return _.has(result, 'message') && result['message'] === 'Endpoint request timed out';
         });
+        let t_overall = 0, t_build_embedding = 0, t_load_model = 0, t_inference = 0
+        parsed_results.forEach(r => {
+            t_overall += r['t_overall'];
+            t_build_embedding += r['t_sent_embedding'];
+            t_load_model += r['t_load_model'];
+            t_inference += r['t_inference'];
+        });
+        t_overall /= results.length;
+        t_build_embedding /= results.length;
+        t_load_model /= results.length;
+        t_inference /= results.length;
+
         console.log(`${size} queries took ${elapsed} s. Throughput is ${size / elapsed} qps.`);
-        console.log(`Contains timeouts: ${Boolean(contains_timeout)}`)
+        console.log(`Contains timeouts: ${Boolean(contains_timeout)}`);
 
         latencies.sort();
         var p50 = latencies[Math.floor(latencies.length * 0.5) - 1];
         var p99 = latencies[Math.floor(latencies.length * 0.99) - 1];
         var avg = _.mean(latencies);
         console.log(`${latencies.length} requests successfully returned. p50 latency is ${p50} s, p99 latency is ${p99} s, avg. latency is ${avg} s.`);
+
+        console.log(`Overall: ${t_overall} s, build embedding: ${t_build_embedding} s, load model: ${t_load_model} s, inference: ${t_inference} s.`);
     });
 });
 
