@@ -1,3 +1,5 @@
+import time
+
 import boto3
 import torch
 from torch.autograd import Variable
@@ -68,28 +70,41 @@ def sentence_to_matrix(sentence1, sentence2):
 
 
 def handler(event, context):
+    t_start = time.time()
     body = json.loads(event['body'])
     sentence1 = body['sent1']
     sentence2 = body['sent2']
 
+    t_start_build_sentence_embedding = time.time()
     input_matrix1, input_matrix2 = sentence_to_matrix(sentence1, sentence2)
+    t_duration_sentence_embedding = time.time() - t_start_build_sentence_embedding
 
     # load and run model
     # you may need to modify this based on your model definition
+    t_start_load_model = time.time()
     global model
     if model is None:
         model = torch.load('static_best_model.pt')
         model.eval()
+    t_duration_load_model = time.time() - t_start_load_model
+
+    t_start_inference = time.time()
     torchIn1 = Variable(torch.from_numpy(input_matrix1.astype(np.float32)))
     torchIn2 = Variable(torch.from_numpy(input_matrix2.astype(np.float32)))
     output = model(torchIn1, torchIn2)
     score = output.data.numpy().tolist()
+    t_duration_inference = time.time() - t_start_inference
+    t_duration = time.time() - t_start
 
     # return result
     result = {
         'sent1': sentence1,
         'sent2': sentence2,
-        'score': score
+        'score': score,
+        't_overall': t_duration,
+        't_sent_embedding': t_duration_sentence_embedding,
+        't_load_model': t_duration_load_model,
+        't_inference': t_duration_inference
     }
     return {
         'statusCode': 200,
