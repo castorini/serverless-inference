@@ -8,6 +8,7 @@ from argparse import ArgumentParser
 
 import boto3
 import numpy
+import time
 import torch
 from torch.autograd import Variable
 
@@ -75,6 +76,7 @@ def put_words(word_vectors_map, table_name):
                 table_name: request
             }
         )
+        time.sleep(3)
 
         if i % 10 == 0:
             print('Finished batch', i+1)
