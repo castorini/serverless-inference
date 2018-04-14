@@ -3,13 +3,21 @@
 # This is a script to craete deployment package for running PyTorch model on AWS Lambda.
 # It's suggested to use this script on an EC2 instance with at least 2 vCPU and 4 GB of RAM.
 # To use this script, simply put it in home directory of the EC2 instance and run it, it will
-# create a `deploy.zip` which is the deployment pacakge for AWS Lambda. You can add into it
-# your PyTorch models and files and then upload the package to S3, and configure your Lambda
-# to load the package from there.
+# create a `deployment_package.zip` which is the deployment pacakge for AWS Lambda.
+#
+# You also need to manually put into it your PyTorch models and files and then upload the package to S3, and 
+# configure your Lambda to load the package from there.
 
-# update machine
+# update machine and install necessary libs/programs
 sudo yum -y update
-sudo yum install -y gcc zlib zlib-devel openssl openssl-devel git make automake gcc-c++ kernel-devel
+sudo yum install -y gcc gcc-gfortran gcc-c++ zlib zlib-devel openssl openssl-devel git make automake kernel-devel
+sudo yum install -y openblas-devel
+
+# cp OpenBLAS libs and dependencies to /tmp to simulate Lambda's runtime environment
+sudo mkdir -p /tmp/lib
+sudo find /usr/lib64 -name "libopenblas.*" -exec cp {} /tmp/lib \;
+sudo find /usr/lib64 -name "libgfortran.*" -exec cp {} /tmp/lib \;
+sudo find /usr/lib64 -name "libquadmath.*" -exec cp {} /tmp/lib \;
 
 # cmake 3.6.2
 cd
@@ -29,29 +37,40 @@ sudo make install
 
 # setup virtual environment to install python packages
 cd
-sudo pip3 install virtualenv
+sudo env "PATH=$PATH" pip3 install virtualenv
 virtualenv -p python3 ~/deploy
 source ~/deploy/bin/activate
 
-# pre-required packages
-pip3 install cython  # numpy dependency
-pip3 install pyyaml  # pytorch dependency
+# numpy dependency
+pip3 install cython
+# pytorch dependency
+pip3 install pyyaml  
+
 
 # install numpy and pytorch from source to reduce package size
 cd
 git clone --recursive https://github.com/numpy/numpy.git
 cd numpy
+# use openblas
+echo "[openblas]" >> ./site.cfg
+echo "libraries = openblas" >> ./site.cfg
+echo "library_dirs = /tmp/lib" >> ./site.cfg
+echo "include_dirs = /tmp/lib" >> ./site.cfg
+python3 setup.py config
 python3 setup.py install
 
 # and pytorch...
 cd
 git clone --recursive https://github.com/pytorch/pytorch.git
 cd pytorch
-export NO_CUDA=1  # don't need this for inferencing
-export NO_CUDNN=1 # don't need this for inferencing
+git checkout v0.3.1
+git submodule update --init
+export NO_CUDA=1  # don't need CUDA for inferencing
+export NO_CUDNN=1 # don't need CUDNN for inferencing
 python3 setup.py install
-pip3 install torchvision
 
 # create the deployment package
 cd $VIRTUAL_ENV/lib/python3.6/site-packages
-zip -r9 ~/deploy.zip *
+zip -r9 ~/deployment_package.zip *
+cd /tmp/lib
+zip -r9 ~/deployment_package.zip libopenblas.* libgfortran.* libquadmath.*
