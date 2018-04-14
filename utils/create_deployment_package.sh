@@ -13,11 +13,11 @@ sudo yum -y update
 sudo yum install -y gcc gcc-gfortran gcc-c++ zlib zlib-devel openssl openssl-devel git make automake kernel-devel
 sudo yum install -y openblas-devel
 
-# cp OpenBLAS libs and dependencies to /var/task to simulate Lambda's runtime environment
-sudo mkdir /var/task
-sudo find /usr/lib64 -name "libopenblas.*" -exec cp {} /var/task \;
-sudo find /usr/lib64 -name "libgfortran.*" -exec cp {} /var/task \;
-sudo find /usr/lib64 -name "libquadmath.*" -exec cp {} /var/task \;
+# cp OpenBLAS libs and dependencies to /tmp to simulate Lambda's runtime environment
+sudo mkdir -p /tmp/lib
+sudo find /usr/lib64 -name "libopenblas.*" -exec cp {} /tmp/lib \;
+sudo find /usr/lib64 -name "libgfortran.*" -exec cp {} /tmp/lib \;
+sudo find /usr/lib64 -name "libquadmath.*" -exec cp {} /tmp/lib \;
 
 # cmake 3.6.2
 cd
@@ -37,7 +37,7 @@ sudo make install
 
 # setup virtual environment to install python packages
 cd
-sudo pip3 install virtualenv
+sudo env "PATH=$PATH" pip3 install virtualenv
 virtualenv -p python3 ~/deploy
 source ~/deploy/bin/activate
 
@@ -54,8 +54,8 @@ cd numpy
 # use openblas
 echo "[openblas]" >> ./site.cfg
 echo "libraries = openblas" >> ./site.cfg
-echo "library_dirs = /var/task" >> ./site.cfg
-echo "include_dirs = /var/task" >> ./site.cfg
+echo "library_dirs = /tmp/lib" >> ./site.cfg
+echo "include_dirs = /tmp/lib" >> ./site.cfg
 python3 setup.py config
 python3 setup.py install
 
@@ -63,6 +63,8 @@ python3 setup.py install
 cd
 git clone --recursive https://github.com/pytorch/pytorch.git
 cd pytorch
+git checkout v0.3.1
+git submodule update --init
 export NO_CUDA=1  # don't need CUDA for inferencing
 export NO_CUDNN=1 # don't need CUDNN for inferencing
 python3 setup.py install
@@ -70,5 +72,5 @@ python3 setup.py install
 # create the deployment package
 cd $VIRTUAL_ENV/lib/python3.6/site-packages
 zip -r9 ~/deployment_package.zip *
-cd /var/task
-zip -r9 ~/deployment_package.zip *
+cd /tmp/lib
+zip -r9 ~/deployment_package.zip libopenblas.* libgfortran.* libquadmath.*
