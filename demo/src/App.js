@@ -24,8 +24,8 @@ class App extends Component {
       type: 'POST',
       url: process.env.REACT_APP_SM_CNN_URL,
       data: JSON.stringify({
-        sent1: 'how are glacier caves formed',
-        sent2: 'the ice facade is approximately 60 m high'
+        sent1: $('#sm-cnn-sent-1').val(),
+        sent2: $('#sm-cnn-sent-2').val()
       }),
       dataType: 'json',
       success: (data) => {
@@ -45,7 +45,7 @@ class App extends Component {
       type: 'POST',
       url: process.env.REACT_APP_KIM_CNN_URL,
       data: JSON.stringify({
-        input: 'the movie has a happy ending'
+        input: $('#kim-cnn-input').val()
       }),
       dataType: 'json',
       success: (data) => {
@@ -54,7 +54,7 @@ class App extends Component {
           softmaxDenom += Math.exp(data.output[i]);
         }
         var score = 0;
-        for (var i = 0; i < 6; i++) {
+        for (i = 0; i < 6; i++) {
           score += i * Math.exp(data.output[i]) / softmaxDenom;
         }
         this.setState({
@@ -81,11 +81,11 @@ class App extends Component {
               <h2 className="display-4">SM-CNN</h2>
               <p className="lead">Short text pair ranking</p>
               <InputGroup>
-                <Input placeholder="how are glacier caves formed" />
+                <Input id="sm-cnn-sent-1" placeholder="how are glacier caves formed" />
               </InputGroup>
               <br />
               <InputGroup>
-                <Input placeholder="the ice facade is approximately 60 m high" />
+                <Input id="sm-cnn-sent-2" placeholder="the ice facade is approximately 60 m high" />
               </InputGroup>
               <br />
               <Alert color="success">
@@ -106,7 +106,7 @@ class App extends Component {
               <p className="lead">Sentence classification</p>
             </div>
             <InputGroup>
-              <Input placeholder="the movie has a happy ending" />
+              <Input id="kim-cnn-input" placeholder="the movie has a happy ending" />
             </InputGroup>
             <br />
             <Alert color="success">
