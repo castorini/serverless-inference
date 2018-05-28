@@ -9,10 +9,14 @@ class App extends Component {
     this.state = {
       sm_cnn: {
         score: ' '
+      },
+      kim_cnn: {
+        score: ' '
       }
     }
 
     this.evaluate_smcnn = this.evaluate_smcnn.bind(this);
+    this.evaluate_kimcnn = this.evaluate_kimcnn.bind(this);
   }
 
   evaluate_smcnn() {
@@ -36,6 +40,32 @@ class App extends Component {
     });
   }
 
+  evaluate_kimcnn() {
+    $.ajax({
+      type: 'POST',
+      url: process.env.REACT_APP_KIM_CNN_URL,
+      data: JSON.stringify({
+        input: 'the movie has a happy ending'
+      }),
+      dataType: 'json',
+      success: (data) => {
+        var softmaxDenom = 0;
+        for (var i = 0; i < 6; i++) {
+          softmaxDenom += Math.exp(data.output[i]);
+        }
+        var score = 0;
+        for (var i = 0; i < 6; i++) {
+          score += i * Math.exp(data.output[i]) / softmaxDenom;
+        }
+        this.setState({
+          kim_cnn: {
+            score: score.toFixed(2)
+          }
+        });
+      }
+    });
+  }
+
   render() {
     return (
       <div className="App">
@@ -43,12 +73,9 @@ class App extends Component {
           <Container>
             <h1 className="display-3">Serverless Inference Demo</h1>
             <p className="lead">Try out text ranking and sentence classification models deployed on AWS Lambda</p>
-            <p className="lead">
-              <Button color="primary">Learn More</Button>
-            </p>
           </Container>
         </Jumbotron>
-        <div className="pt-3 pb-5 px-3">
+        <div className="pt-3 pb-5 mb-3 px-3">
           <Container>
             <div>
               <h2 className="display-4">SM-CNN</h2>
@@ -78,6 +105,18 @@ class App extends Component {
               <h2 className="display-4">Kim CNN</h2>
               <p className="lead">Sentence classification</p>
             </div>
+            <InputGroup>
+              <Input placeholder="the movie has a happy ending" />
+            </InputGroup>
+            <br />
+            <Alert color="success">
+              {'Score: '}{this.state.kim_cnn.score}
+            </Alert>
+            <Button className="float-right"
+              color="secondary"
+              onClick={this.evaluate_kimcnn}>
+              Evaluate
+            </Button>
           </Container>
         </div>
       </div>
