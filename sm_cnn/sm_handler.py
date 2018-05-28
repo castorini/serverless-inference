@@ -1,12 +1,13 @@
+import json
 import time
 
 import boto3
+
+import numpy as np
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
-import json
 
 # change this to use other models
 from sm_cnn.model import SMModel
@@ -108,7 +109,11 @@ def handler(event, context):
     }
     return {
         'statusCode': 200,
-        'headers': { 'Content-Type': 'application/json' },
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': True
+        },
         'body': json.dumps(result)
     }
 

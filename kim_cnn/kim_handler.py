@@ -1,15 +1,18 @@
+import json
 import time
 
 import boto3
+
+import numpy as np
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
-import json
+import time
 
 # change this to use other models
 from model import KimCNN
+
 
 # You will need to setup your own dynamoDB and table
 client = boto3.client('dynamodb')
@@ -116,7 +119,11 @@ def handler(event, context):
     # return result
     return {
         'statusCode': 200,
-        'headers': { 'Content-Type': 'application/json' },
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': True
+        },
         'body': json.dumps(result)
     }
 
