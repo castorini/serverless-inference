@@ -2,6 +2,7 @@ import $ from "jquery";
 import React, { Component } from 'react';
 import { Alert, Button, Container, InputGroup, Input, Jumbotron } from 'reactstrap';
 import './App.css';
+import kimCNNData from './kim-cnn-data.json';
 
 class App extends Component {
   constructor(props) {
@@ -41,6 +42,7 @@ class App extends Component {
   }
 
   evaluate_kimcnn() {
+    console.log($('#kim-cnn-input').val());
     $.ajax({
       type: 'POST',
       url: process.env.REACT_APP_KIM_CNN_URL,
@@ -67,6 +69,7 @@ class App extends Component {
   }
 
   render() {
+    const kimCNNListItems = kimCNNData.map((d, i) => <option key={'k'+i}>{d.sentence}</option>);
     return (
       <div className="App">
         <Jumbotron>
@@ -106,7 +109,9 @@ class App extends Component {
               <p className="lead">Sentence classification</p>
             </div>
             <InputGroup>
-              <Input id="kim-cnn-input" placeholder="the movie has a happy ending" />
+              <Input type="select" name="select" id="kim-cnn-input">
+                {kimCNNListItems}
+              </Input>
             </InputGroup>
             <br />
             <Alert color="success">
