@@ -81,6 +81,28 @@ class App extends Component {
         <div className="pt-3 pb-5 mb-3 px-3">
           <Container>
             <div>
+              <h2 className="display-4">Kim CNN</h2>
+              <p className="lead">Sentence classification</p>
+            </div>
+            <InputGroup>
+              <Input type="select" name="select" id="kim-cnn-input">
+                {kimCNNListItems}
+              </Input>
+            </InputGroup>
+            <br />
+            <Alert color="success">
+              {'Score: '}{this.state.kim_cnn.score}
+            </Alert>
+            <Button className="float-right"
+              color="secondary"
+              onClick={this.evaluate_kimcnn}>
+              Evaluate
+            </Button>
+          </Container>
+        </div>
+        <div className="bg-light pt-3 pb-5 px-3">
+          <Container>
+            <div>
               <h2 className="display-4">SM-CNN</h2>
               <p className="lead">Short text pair ranking</p>
               <InputGroup>
@@ -100,28 +122,6 @@ class App extends Component {
                 Evaluate
               </Button>
             </div>
-          </Container>
-        </div>
-        <div className="bg-light pt-3 pb-5 px-3">
-          <Container>
-            <div>
-              <h2 className="display-4">Kim CNN</h2>
-              <p className="lead">Sentence classification</p>
-            </div>
-            <InputGroup>
-              <Input type="select" name="select" id="kim-cnn-input">
-                {kimCNNListItems}
-              </Input>
-            </InputGroup>
-            <br />
-            <Alert color="success">
-              {'Score: '}{this.state.kim_cnn.score}
-            </Alert>
-            <Button className="float-right"
-              color="secondary"
-              onClick={this.evaluate_kimcnn}>
-              Evaluate
-            </Button>
           </Container>
         </div>
       </div>
